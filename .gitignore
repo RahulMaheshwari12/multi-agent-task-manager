@@ -1,0 +1,8 @@
+venv/
+.env
+__pycache__/
+*.pyc
+*.db
+outputs/
+.chromadb/
+*.log
