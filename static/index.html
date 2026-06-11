@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Task Manager</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="logo">
+        <span class="logo-icon">⚡</span>
+        <span>TaskAI</span>
+    </div>
+    <nav>
+        <a href="#" class="nav-item active" onclick="showSection('tasks')">
+            <span>📋</span> All Tasks
+        </a>
+        <a href="#" class="nav-item" onclick="showSection('overdue')">
+            <span>⚠️</span> Overdue
+        </a>
+        <a href="#" class="nav-item" onclick="showSection('chat')">
+            <span>💬</span> AI Chat
+        </a>
+    </nav>
+    <div class="sidebar-footer">
+        <span>Powered by LangGraph + Ollama</span>
+    </div>
+</div>
+
+<div class="main">
+
+    <!-- Header -->
+    <div class="header">
+        <div class="header-left">
+            <h1 id="page-title">All Tasks</h1>
+        </div>
+        <div class="header-right">
+            <input type="text" id="searchInput" placeholder="Search tasks..." oninput="searchTasks()">
+            <button class="btn-primary" onclick="openCreateModal()">+ New Task</button>
+        </div>
+    </div>
+
+    <!-- Tasks Section -->
+    <div id="section-tasks" class="section active">
+        <div class="filter-bar">
+            <button class="filter-btn active" onclick="filterTasks('', this)">All</button>
+            <button class="filter-btn" onclick="filterTasks('pending', this)">Pending</button>
+            <button class="filter-btn" onclick="filterTasks('in_progress', this)">In Progress</button>
+            <button class="filter-btn" onclick="filterTasks('completed', this)">Completed</button>
+        </div>
+        <div id="tasks-container" class="tasks-grid"></div>
+    </div>
+
+    <!-- Overdue Section -->
+    <div id="section-overdue" class="section">
+        <div id="overdue-container" class="tasks-grid"></div>
+    </div>
+
+    <!-- Chat Section -->
+    <div id="section-chat" class="section">
+        <div class="chat-container">
+            <div class="chat-messages" id="chat-messages">
+                <div class="chat-message bot">
+                    <div class="message-bubble">
+                        👋 Hi! I'm your AI Task Manager. Tell me what you need.<br><br>
+                        Try: "Create a high priority task for John to deploy frontend by Friday"
+                    </div>
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="chatInput" placeholder="Type your message..." 
+                    onkeypress="if(event.key==='Enter') sendMessage()">
+                <button class="btn-primary" onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Create Task Modal -->
+<div id="createModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Create New Task</h2>
+            <span onclick="closeModal()" class="close">✕</span>
+        </div>
+        <div class="modal-body">
+            <input type="text" id="taskTitle" placeholder="Task title *" required>
+            <textarea id="taskDescription" placeholder="Description (optional)"></textarea>
+            <select id="taskPriority">
+                <option value="low">Low Priority</option>
+                <option value="medium" selected>Medium Priority</option>
+                <option value="high">High Priority</option>
+            </select>
+            <input type="text" id="taskAssigned" placeholder="Assigned to">
+            <input type="date" id="taskDueDate">
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+            <button class="btn-primary" onclick="createTask()">Create Task</button>
+        </div>
+    </div>
+</div>
+
+<script src="/static/script.js"></script>
+</body>
+</html>
