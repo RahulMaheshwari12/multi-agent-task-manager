@@ -116,10 +116,10 @@ def run_bot():
 
     app = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
 
-    app.add_handler("start", start_command)
-    app.add_handler("help", help_command)
-    app.add_handler("tasks", tasks_command)
-    app.add_handler("overdue", overdue_command)
+    app.add_handler(CommandHandler("start", start_command))
+    app.add_handler(CommandHandler("help", help_command))
+    app.add_handler(CommandHandler("tasks", tasks_command))
+    app.add_handler(CommandHandler("overdue", overdue_command))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     app.add_error_handler(error_handler)
 
