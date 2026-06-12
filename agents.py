@@ -2,6 +2,7 @@ from langchain_ollama import ChatOllama
 from langchain_groq import ChatGroq
 from langchain_core.messages import HumanMessage, SystemMessage
 from typing import TypedDict
+from datetime import datetime
 import os
 from dotenv import load_dotenv
 from tools import (
@@ -44,7 +45,7 @@ class AgentState(TypedDict):
     retry_count: int
 
 # ── Supervisor Agent ───────────────────────────────────
-def supervisor_agent(state: AgentState) -> AgentState:
+async def supervisor_agent(state: AgentState) -> AgentState:
     """Reads user message and decides which agent to call"""
     messages = [
         SystemMessage(content="""You are a supervisor of a task management system.
@@ -63,7 +64,7 @@ def supervisor_agent(state: AgentState) -> AgentState:
         HumanMessage(content=state["user_message"])
     ]
     
-    response = llm.invoke(messages)
+    response = await llm.ainvoke(messages)
     intent = response.content.strip().lower()
     
     # Map intent to next agent
@@ -84,14 +85,22 @@ def supervisor_agent(state: AgentState) -> AgentState:
     return {**state, "intent": intent, "current_agent": next_agent}
 
 # ── Task Manager Agent ─────────────────────────────────
-def task_manager_agent(state: AgentState) -> AgentState:
+async def task_manager_agent(state: AgentState) -> AgentState:
     """Handles all task CRUD operations"""
+    
+    # 1. Prevent duplicate task creation during retries
+    if state.get("tool_output") and "successfully" in state["tool_output"]:
+        return {**state, "current_agent": "reviewer"}
+        
+    current_date = datetime.now().strftime("%Y-%m-%d (%A)")
     
     # Bind tools to llm
     llm_with_tools = llm.bind_tools(task_manager_tools)
     
+    # 2. Inject current_date into the SystemMessage content
     messages = [
-        SystemMessage(content="""You are a task manager agent. 
+        SystemMessage(content=f"""You are a task manager agent.
+        Today's date is {current_date}. Use this date as reference for relative days (like 'tomorrow', 'next Friday', etc.).
         Based on the user message, use the appropriate tool to manage tasks.
         Always use a tool to complete the request.
         For dates use YYYY-MM-DD format.
@@ -99,7 +108,7 @@ def task_manager_agent(state: AgentState) -> AgentState:
         HumanMessage(content=state["user_message"])
     ]
     
-    response = llm_with_tools.invoke(messages)
+    response = await llm_with_tools.ainvoke(messages)
     
     # Handle tool calls
     tool_output = ""
@@ -111,14 +120,14 @@ def task_manager_agent(state: AgentState) -> AgentState:
             # Find and execute the tool
             tool_map = {t.name: t for t in task_manager_tools}
             if tool_name in tool_map:
-                tool_output = tool_map[tool_name].invoke(tool_args)
+                tool_output = await tool_map[tool_name].ainvoke(tool_args)
     else:
         tool_output = str(response.content) if hasattr(response, 'content') else str(response)
     
     return {**state, "tool_output": tool_output, "current_agent": "reviewer"}
 
 # ── Planner Agent ──────────────────────────────────────
-def planner_agent(state: AgentState) -> AgentState:
+async def planner_agent(state: AgentState) -> AgentState:
     """Breaks complex requests into multiple tasks"""
     
     llm_with_tools = llm.bind_tools(planner_tools)
@@ -131,7 +140,7 @@ def planner_agent(state: AgentState) -> AgentState:
         HumanMessage(content=state["user_message"])
     ]
     
-    response = llm_with_tools.invoke(messages)
+    response = await llm_with_tools.ainvoke(messages)
     
     tool_output = ""
     if hasattr(response, 'tool_calls') and response.tool_calls:
@@ -140,7 +149,7 @@ def planner_agent(state: AgentState) -> AgentState:
             tool_args = tool_call['args']
             tool_map = {t.name: t for t in planner_tools}
             if tool_name in tool_map:
-                result = tool_map[tool_name].invoke(tool_args)
+                result = await tool_map[tool_name].ainvoke(tool_args)
                 tool_output += result + "\n"
     else:
         tool_output = str(response.content) if hasattr(response, 'content') else str(response)
@@ -148,12 +157,12 @@ def planner_agent(state: AgentState) -> AgentState:
     return {**state, "tool_output": tool_output, "current_agent": "reviewer"}
 
 # ── Recommender Agent ──────────────────────────────────
-def recommender_agent(state: AgentState) -> AgentState:
+async def recommender_agent(state: AgentState) -> AgentState:
     """Provides task recommendations and productivity advice"""
     
     # Get current tasks for context
-    current_tasks = get_tasks.invoke({"status": ""})
-    overdue = get_overdue_tasks.invoke({})
+    current_tasks = await get_tasks.ainvoke({"status": ""})
+    overdue = await get_overdue_tasks.ainvoke({})
     
     messages = [
         SystemMessage(content=f"""You are a productivity recommender agent.
@@ -165,13 +174,13 @@ def recommender_agent(state: AgentState) -> AgentState:
         HumanMessage(content=state["user_message"])
     ]
     
-    response = llm.invoke(messages)
+    response = await llm.ainvoke(messages)
     tool_output = str(response.content) if hasattr(response, 'content') else str(response)
     
     return {**state, "tool_output": tool_output, "current_agent": "reviewer"}
 
 # ── Reviewer Agent ─────────────────────────────────────
-def reviewer_agent(state: AgentState) -> AgentState:
+async def reviewer_agent(state: AgentState) -> AgentState:
     """Validates agent output and formats final response"""
     
     messages = [
@@ -186,7 +195,7 @@ def reviewer_agent(state: AgentState) -> AgentState:
         Format a clean response for the user.""")
     ]
     
-    response = llm.invoke(messages)
+    response = await llm.ainvoke(messages)
     review = str(response.content) if hasattr(response, 'content') else str(response)
     
     if "NEEDS_RETRY" in review.upper():
