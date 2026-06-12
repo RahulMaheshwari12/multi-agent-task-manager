@@ -64,7 +64,7 @@ def supervisor_agent(state: AgentState) -> AgentState:
     ]
     
     response = llm.invoke(messages)
-    intent = response.strip().lower()
+    intent = response.content.strip().lower()
     
     # Map intent to next agent
     intent_map = {
