@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 from tools import get_tasks, get_overdue_tasks
-from telegram import Update
+from bot import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 from graphs import run_pipeline
 import os 
