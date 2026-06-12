@@ -76,7 +76,7 @@ async def overdue_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("📋 Fetching your overdue tasks...")
 
     try:
-        overdue_tasks = get_overdue_tasks()
+        overdue_tasks = get_overdue_tasks.invoke()
         if overdue_tasks:
             await update.message.reply_text(f"Overdue Tasks:\n\n{overdue_tasks}")
         else:
@@ -98,8 +98,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     try:
         results = run_pipeline(user_message)
-        responce = results.get("final responce" , "Sorry, I could not process that.")
-        await update.message.reply_text(responce)
+        response = results.get("final_response" , "Sorry, I could not process that.")
+        await update.message.reply_text(response)
     except Exception as e:
         await update.message.reply_text(f"Error fetching your request: {str(e)}")
 
