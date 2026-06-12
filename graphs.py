@@ -12,7 +12,7 @@ from database import init_db
 
 def build_graph():
 
-    init_db()
+
 
     graph = StateGraph(AgentState)
 
@@ -48,14 +48,15 @@ def build_graph():
 
     graph.add_conditional_edges("reviewer", router, {
         "task_manager": "task_manager",
+        "retry": "task_manager",
         "done": END
     })
 
     return graph.compile()
 
-pipline = build_graph()
+pipeline = build_graph()
 
-def run_pipeline(user_message: str) -> str:
+def run_pipeline(user_message: str) -> dict:
     """Main function called by FastAPI"""
     initial_state = {
         "user_message": user_message,
@@ -67,6 +68,6 @@ def run_pipeline(user_message: str) -> str:
         "current_agent": "supervisor",
         "retry_count": 0
     }
-    result = pipline.invoke(initial_state)
+    result = pipeline.invoke(initial_state)
 
     return result

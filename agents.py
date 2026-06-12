@@ -21,14 +21,14 @@ USE_GROQ = os.getenv("USE_GROQ", "false").lower() == "true"
 
 if USE_GROQ:
     llm = ChatGroq(
-        model="llama-3.1-8b-instant",
+        model="llama-3.3-70b-versatile",
         api_key=os.getenv("GROQ_API_KEY")
     )
 else:
     llm = ChatOllama(model="llama3")
 
 # ── Tools per agent ────────────────────────────────────
-task_manager_tools = [create_task, get_tasks, update_task, complete_task, delete_task]
+task_manager_tools = [create_task, get_tasks, update_task, complete_task, delete_task, get_overdue_tasks, search_tasks]
 recommender_tools = [get_tasks, get_overdue_tasks, search_tasks]
 planner_tools = [create_task, get_tasks]
 
@@ -194,12 +194,22 @@ def reviewer_agent(state: AgentState) -> AgentState:
     else:
         status = "approved"
     
-    # Clean response — remove APPROVED prefix
+
     final = review.replace("APPROVED", "").replace("NEEDS_RETRY", "").strip()
+    
+
+    if status == "retry":
+        return {
+            **state,
+            "review_status": status,
+            "final_response": final,
+            "current_agent": "retry",
+            "retry_count": state.get("retry_count", 0) + 1
+        }
     
     return {**state, "review_status": status, "final_response": final, "current_agent": "done"}
 
-# ── Router ─────────────────────────────────────────────
+
 def router(state: AgentState) -> str:
     """Routes to next agent based on current_agent"""
     current = state.get("current_agent", "done")

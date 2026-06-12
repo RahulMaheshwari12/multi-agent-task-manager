@@ -1,12 +1,29 @@
 // ── API Base URL ──────────────────────────────────────
-const API = 'http://localhost:8000';
+const API = '';
+
+// ── XSS Protection ───────────────────────────────────
+function escapeHTML(str) {
+    if (!str) return '';
+    return str.replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;')
+              .replace(/"/g, '&quot;')
+              .replace(/'/g, '&#039;');
+}
+
+// ── Debounce for Search ──────────────────────────────
+let searchTimeout;
+function debouncedSearch() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => searchTasks(), 300);
+}
 
 // ── Section Navigation ────────────────────────────────
-function showSection(name) {
+function showSection(name, e) {
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     document.getElementById(`section-${name}`).classList.add('active');
-    event.target.closest('.nav-item').classList.add('active');
+    e.target.closest('.nav-item').classList.add('active');
     
     const titles = { tasks: 'All Tasks', overdue: 'Overdue Tasks', chat: 'AI Chat' };
     document.getElementById('page-title').textContent = titles[name];
@@ -59,15 +76,15 @@ function renderTasks(tasks, containerId) {
     container.innerHTML = tasks.map(task => `
         <div class="task-card" id="task-${task.id}">
             <div class="task-card-header">
-                <div class="task-title">${task.title}</div>
-                <span class="priority-badge priority-${task.priority}">${task.priority}</span>
+                <div class="task-title">${escapeHTML(task.title)}</div>
+                <span class="priority-badge priority-${task.priority}">${escapeHTML(task.priority)}</span>
             </div>
             <div class="task-meta">
-                <span>👤 ${task.assigned_to || 'Unassigned'}</span>
-                <span>📅 ${task.due_date || 'No due date'}</span>
+                <span>👤 ${escapeHTML(task.assigned_to) || 'Unassigned'}</span>
+                <span>📅 ${escapeHTML(task.due_date) || 'No due date'}</span>
             </div>
-            <span class="status-badge status-${task.status}">${task.status}</span>
-            ${task.description ? `<div class="task-meta">${task.description}</div>` : ''}
+            <span class="status-badge status-${task.status}">${escapeHTML(task.status)}</span>
+            ${task.description ? `<div class="task-meta">${escapeHTML(task.description)}</div>` : ''}
             <div class="task-actions">
                 ${task.status !== 'completed' ? 
                     `<button class="btn-success" onclick="completeTask(${task.id})">✓ Complete</button>` : ''}
@@ -93,7 +110,7 @@ async function searchTasks() {
     }
     
     try {
-        const res = await fetch(`${API}/tasks/search?keyword=${keyword}`);
+        const res = await fetch(`${API}/tasks/search?keyword=${encodeURIComponent(keyword)}`);
         const data = await res.json();
         renderTasks(data.tasks, 'tasks-container');
     } catch (err) {
@@ -219,7 +236,10 @@ function addChatMessage(text, sender, id = null) {
     const div = document.createElement('div');
     div.className = `chat-message ${sender}`;
     if (id) div.id = id;
-    div.innerHTML = `<div class="message-bubble">${text}</div>`;
+    const bubble = document.createElement('div');
+    bubble.className = 'message-bubble';
+    bubble.textContent = text;
+    div.appendChild(bubble);
     messages.appendChild(div);
     messages.scrollTop = messages.scrollHeight;
 }

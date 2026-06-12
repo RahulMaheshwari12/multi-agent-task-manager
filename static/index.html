@@ -14,13 +14,13 @@
         <span>TaskAI</span>
     </div>
     <nav>
-        <a href="#" class="nav-item active" onclick="showSection('tasks')">
+        <a href="#" class="nav-item active" onclick="showSection('tasks', event)">
             <span>📋</span> All Tasks
         </a>
-        <a href="#" class="nav-item" onclick="showSection('overdue')">
+        <a href="#" class="nav-item" onclick="showSection('overdue', event)">
             <span>⚠️</span> Overdue
         </a>
-        <a href="#" class="nav-item" onclick="showSection('chat')">
+        <a href="#" class="nav-item" onclick="showSection('chat', event)">
             <span>💬</span> AI Chat
         </a>
     </nav>
@@ -37,7 +37,7 @@
             <h1 id="page-title">All Tasks</h1>
         </div>
         <div class="header-right">
-            <input type="text" id="searchInput" placeholder="Search tasks..." oninput="searchTasks()">
+            <input type="text" id="searchInput" placeholder="Search tasks..." oninput="debouncedSearch()">
             <button class="btn-primary" onclick="openCreateModal()">+ New Task</button>
         </div>
     </div>
