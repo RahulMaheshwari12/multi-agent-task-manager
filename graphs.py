@@ -11,9 +11,6 @@ from agents import (
 from database import init_db
 
 def build_graph():
-
-
-
     graph = StateGraph(AgentState)
 
     graph.add_node("supervisor", supervisor_agent)
@@ -56,7 +53,7 @@ def build_graph():
 
 pipeline = build_graph()
 
-def run_pipeline(user_message: str) -> dict:
+async def run_pipeline(user_message: str) -> dict:
     """Main function called by FastAPI"""
     initial_state = {
         "user_message": user_message,
@@ -68,6 +65,6 @@ def run_pipeline(user_message: str) -> dict:
         "current_agent": "supervisor",
         "retry_count": 0
     }
-    result = pipeline.invoke(initial_state)
+    result = await pipeline.ainvoke(initial_state)
 
     return result

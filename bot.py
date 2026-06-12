@@ -28,7 +28,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     📋 Quick Commands:
     /tasks - View all pending tasks
     /overdue - View overdue tasks
-    /help - Show this message
+    /help - Shows command list 
 
     Let's get started! 🚀"""
 
@@ -62,7 +62,7 @@ async def tasks_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("📋 Fetching your tasks...")
 
     try:
-        tasks = get_tasks.invoke({"status": "Pending"}) 
+        tasks = await get_tasks.ainvoke({"status": "pending"}) 
         if tasks:
             await update.message.reply_text(f"Pending tasks:\n\n{tasks}")
         else:
@@ -75,7 +75,7 @@ async def overdue_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("📋 Fetching your overdue tasks...")
 
     try:
-        overdue_tasks = get_overdue_tasks.invoke({})
+        overdue_tasks = await get_overdue_tasks.ainvoke({})
         if overdue_tasks:
             await update.message.reply_text(f"Overdue Tasks:\n\n{overdue_tasks}")
         else:
@@ -96,7 +96,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("🤔 Processing your request...")
 
     try:
-        results = run_pipeline(user_message)
+        results = await run_pipeline(user_message)
         response = results.get("final_response" , "Sorry, I could not process that.")
         await update.message.reply_text(response)
     except Exception as e:

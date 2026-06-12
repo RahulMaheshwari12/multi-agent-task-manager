@@ -27,7 +27,7 @@ BASE_DIR = pathlib.Path(__file__).parent
 # ── Lifespan ───────────────────────────────────────────
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    init_db()
+    await init_db()
     print("✅ Database initialized")
     yield
     print("👋 Shutting down")
@@ -75,7 +75,7 @@ async def chat(body : UserMessage):
         if not body.message.strip():
             raise HTTPException(status_code= 400, detail = "Message cannot be empty")
         
-        result = run_pipeline(body.message)
+        result = await run_pipeline(body.message)
 
         return {
             "success": True,
@@ -92,7 +92,7 @@ async def chat(body : UserMessage):
 async def get_tasks(status : str= ""):
     """Get all tasks, optionally filtered by status"""
     try:
-        tasks = get_tasks_db(status if status else None)
+        tasks = await get_tasks_db(status if status else None)
         return {"success": True, "tasks": tasks}
     except Exception as e:
         raise HTTPException(status_code= 500, detail= str(e))
@@ -101,7 +101,7 @@ async def get_tasks(status : str= ""):
 async def get_overdue_tasks():
     """Get all tasks that are not complete"""
     try:
-        tasks = get_overdue_tasks_db()
+        tasks = await get_overdue_tasks_db()
         return {"success": True, "tasks": tasks}
     except Exception as e:
         raise HTTPException(status_code= 500, detail= str(e))
@@ -110,7 +110,7 @@ async def get_overdue_tasks():
 async def search_tasks(keyword : str):
     """Search tasks by keyword"""
     try:
-        tasks = search_tasks_db(keyword)
+        tasks = await search_tasks_db(keyword)
         return {"success": True, "tasks": tasks}
     except Exception as e:
         raise HTTPException(status_code= 500, detail= str(e))
@@ -119,7 +119,7 @@ async def search_tasks(keyword : str):
 async def create_task(body : TaskCreate):
     """Create task directly from dashboard"""
     try:
-        task_id = create_task_db(
+        task_id = await create_task_db(
             body.title,
             body.description,
             body.priority,
@@ -134,13 +134,13 @@ async def create_task(body : TaskCreate):
 async def update_task(task_id : int, body : TaskUpdate):
     """Update tasks from dashboard"""
     try:
-        tasks = get_tasks_db()
+        tasks = await get_tasks_db()
         task = next((t for t in tasks if t['id'] == task_id), None)
 
         if not task:
             raise HTTPException(status_code= 404, detail=f"task {task_id} not found")
         
-        success = update_task_db(task_id, body.updates)
+        success = await update_task_db(task_id, body.updates)
         if not success:
             raise HTTPException(status_code=400, detail="Invalid fields or task not found")
         return {"success": True, "task_id": task_id}
@@ -148,12 +148,12 @@ async def update_task(task_id : int, body : TaskUpdate):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
+ 
 @app.patch("/tasks/{task_id}/complete")
 async def complete_task(task_id: int):
     """Mark tasks as complete from dashboard"""
     try:
-        tasks = get_tasks_db()
+        tasks = await get_tasks_db()
         task = next((t for t in tasks if t['id'] == task_id), None)
 
         if not task:
@@ -162,7 +162,7 @@ async def complete_task(task_id: int):
         if task['status'] == 'completed':
             raise HTTPException(status_code= 400, detail= f"Task {task_id} is already completed")
         
-        complete_task_db(task_id)
+        await complete_task_db(task_id)
         return {"success" : True, "task_id": task_id}
     except HTTPException:
         raise
@@ -173,13 +173,13 @@ async def complete_task(task_id: int):
 async def delete_task(task_id : int):
     """Delete task from dashboard"""
     try:
-        tasks = get_tasks_db()
+        tasks = await get_tasks_db()
         task = next((t for t in tasks if t['id'] == task_id), None)
 
         if not task:
             raise HTTPException(status_code= 404, detail=f"task {task_id} not found")
         
-        delete_task_db(task_id)
+        await delete_task_db(task_id)
         return {"success": True, "task_id": task_id}
     except HTTPException:
         raise
@@ -203,8 +203,3 @@ if __name__ == "__main__":
         port=8000,
         reload=True
     )
-
-
-
-
-    
