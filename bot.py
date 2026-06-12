@@ -4,7 +4,6 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 from graphs import run_pipeline
 import os 
-import asyncio
 
 load_dotenv()
 
@@ -17,7 +16,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     message= f"""Welcome {user_name} to AI Task Manager:-
 
-    I can help you manage you task.
+    I can help you manage your tasks.
     
     🤖 Just tell me what you need:
     - "Create a high priority task for John to deploy frontend by Friday"
@@ -67,7 +66,7 @@ async def tasks_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if tasks:
             await update.message.reply_text(f"Pending tasks:\n\n{tasks}")
         else:
-            await update.message.reply_text("No pedding task found.")
+            await update.message.reply_text("No pendding tasks found.")
     except Exception as e:
         await update.message.reply_text(f"Error fetching task : {str(e)}")
 
@@ -76,7 +75,7 @@ async def overdue_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("📋 Fetching your overdue tasks...")
 
     try:
-        overdue_tasks = get_overdue_tasks.invoke()
+        overdue_tasks = get_overdue_tasks.invoke({})
         if overdue_tasks:
             await update.message.reply_text(f"Overdue Tasks:\n\n{overdue_tasks}")
         else:

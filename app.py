@@ -1,10 +1,12 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from contextlib import asynccontextmanager
 import uvicorn
 import os
+import pathlib
 from dotenv import load_dotenv
 from graphs import run_pipeline
 from database import (
@@ -20,6 +22,8 @@ from database import (
 
 load_dotenv()
 
+BASE_DIR = pathlib.Path(__file__).parent
+
 # ── Lifespan ───────────────────────────────────────────
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -34,6 +38,14 @@ app = FastAPI(
     description="AI powered task management system using LangGraph + Ollama",
     version="1.0.0",
     lifespan=lifespan
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.mount("/static", StaticFiles(directory="static"), name= "static")
@@ -53,7 +65,7 @@ class TaskUpdate(BaseModel):
 
 @app.get("/dashboard", response_class= HTMLResponse)
 async def dashboard():
-    with open('static/index.html') as f:
+    with open(BASE_DIR / 'static' / 'index.html', encoding='utf-8') as f:
         return f.read()
     
 @app.post("/chat")

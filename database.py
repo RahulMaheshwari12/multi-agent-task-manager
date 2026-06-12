@@ -32,15 +32,17 @@ def init_db():
 def create_task_db(title, description= "", priority= "medium", assigned_to= "", due_date= ""):
     """Create a new task in the database"""
     conn = get_db_connection()
-    cursor= conn.cursor()
-    cursor.execute('''
-        INSERT INTO tasks (title, description, priority, assigned_to, due_date)
-        VALUES (?, ?, ?, ?, ?)
-    ''', (title, description, priority, assigned_to, due_date))
-    task_id = cursor.lastrowid
-    conn.commit()
-    conn.close()
-    return task_id
+    try:
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT INTO tasks (title, description, priority, assigned_to, due_date)
+             VALUES (?, ?, ?, ?, ?)
+         ''', (title, description, priority, assigned_to, due_date))
+        task_id = cursor.lastrowid
+        conn.commit()
+        return task_id
+    finally:
+         conn.close()
 
 def get_tasks_db(status=None):
     """Retrieve tasks from the database, optionally filtered by status"""
@@ -76,10 +78,11 @@ def update_task_db(task_id, updates: dict):
         UPDATE tasks SET {set_clause}, updated_at = ?
         WHERE id = ?
     ''', values)
-    
+
+    affected = cursor.rowcount
     conn.commit()
     conn.close()
-    return True
+    return affected > 0
 
 
 def complete_task_db(task_id):
@@ -89,17 +92,19 @@ def complete_task_db(task_id):
         UPDATE tasks SET status = 'completed', updated_at = ?
         WHERE id = ?
     ''', (datetime.now().isoformat(), task_id))
+    affected = cursor.rowcount
     conn.commit()
     conn.close()
-    return True
+    return affected > 0
 
 def delete_task_db(task_id):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute('DELETE FROM tasks WHERE id = ?', (task_id,))
+    affected = cursor.rowcount
     conn.commit()
     conn.close()
-    return True
+    return affected > 0
 
 def get_overdue_tasks_db():
     conn = get_db_connection()

@@ -1,5 +1,4 @@
-from langchain_core.tools import tool
-import os 
+from langchain_core.tools import tool 
 from database import (
     create_task_db,
     get_tasks_db,
@@ -14,11 +13,11 @@ from database import (
 def create_task(title: str, description: str, assigned_to: str, priority: str, due_date: str) -> str:
     """Create a new task in database.
     priority can be: low, medium, high.
-    due_date formate: YYYY-MM-DD
+    due_date format: YYYY-MM-DD
     """
     try:
-        task_id = create_task_db(title, description, assigned_to, priority, due_date)
-        return f'Task created succeffully with ID: {task_id}'
+        task_id = create_task_db(title, description, priority, assigned_to, due_date)
+        return f'Task created successfully with ID: {task_id}'
     except Exception as e:
         return f'Error creating task: {str(e)}'
     
@@ -82,12 +81,12 @@ def delete_task(task_id: int) -> str:
         task = next((t for t in tasks if t['id']== task_id), None)
 
         if not task:
-            return f'Task {task_id} either do not exist or already Deleted'
+            return f'Task {task_id} does not exist or was already deleted'
         
         delete_task_db(task_id)
-        return f'Task {task_id} Deleted successfully.'
+        return f'Task {task_id} deleted successfully.'
     except Exception as e:
-        return f'failed to delete the give task {task_id}.'
+       return f'Failed to delete task {task_id}: {str(e)}'
     
 @tool 
 def get_overdue_tasks() -> str:
@@ -101,7 +100,7 @@ def get_overdue_tasks() -> str:
             output += f"ID: {t['id']} | {t['title']} | Due: {t['due_date']} | Assigned: {t['assigned_to']}\n"
         return output 
     except Exception as e:
-        return f"Failed to get overdue tasks."
+        return f"Failed to get overdue tasks: {str(e)}"
     
 @tool
 def search_tasks(keyword: str) -> str:
