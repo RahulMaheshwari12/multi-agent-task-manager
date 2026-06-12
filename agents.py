@@ -1,4 +1,4 @@
-from langchain_ollama import OllamaLLM
+from langchain_ollama import ChatOllama
 from langchain_groq import ChatGroq
 from langchain_core.messages import HumanMessage, SystemMessage
 from typing import TypedDict
@@ -25,7 +25,7 @@ if USE_GROQ:
         api_key=os.getenv("GROQ_API_KEY")
     )
 else:
-    llm = OllamaLLM(model="llama3.2:3b")
+    llm = ChatOllama(model="llama3")
 
 # ── Tools per agent ────────────────────────────────────
 task_manager_tools = [create_task, get_tasks, update_task, complete_task, delete_task]
