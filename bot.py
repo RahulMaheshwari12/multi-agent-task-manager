@@ -116,10 +116,12 @@ async def send_summary(context: ContextTypes.DEFAULT_TYPE):
 
         today_str = datetime.now().strftime("%Y-%m-%d (%A)")
         prompt = f"""
-        Today is {today_str}. Please provide productivity recommendations and advice based on these tasks. 
-        DO NOT plan or create any new tasks.
-        Pending: {pending}
-        Overdue: {overdue}
+        Today is {today_str}. 
+        Please act as my personal productivity coach and write a warm, encouraging morning overview.
+        Keep it positive, highly actionable, and formatted nicely for a mobile Telegram screen.
+        DO NOT call any database write tools or create any new tasks.
+        Pending Tasks: {pending}
+        Overdue Tasks: {overdue}
         """
 
         result = await run_pipeline(prompt)
