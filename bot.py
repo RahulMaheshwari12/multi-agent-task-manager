@@ -3,6 +3,8 @@ from tools import get_tasks, get_overdue_tasks
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 from graphs import run_pipeline
+from database import get_setting, save_setting, get_overdue_tasks_db, get_tasks_db
+from datetime import datetime, time, timedelta, timezone
 import os 
 
 load_dotenv()
@@ -102,6 +104,50 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         await update.message.reply_text(f"Error fetching your request: {str(e)}")
 
+async def send_summary(context: ContextTypes.DEFAULT_TYPE):
+    """fetch all pending and overdue tasks and send an morning summary to user"""
+    chat_id = await get_setting("telegram_chat_id")
+    if not chat_id:
+        print("⚠️ No Telegram chat ID saved in settings. Skipping morning summary.")
+        return
+    try:
+        pending = await get_tasks_db("pending")
+        overdue = await get_overdue_tasks_db()
+
+        today_str = datetime.now().strftime("%Y-%m-%d (%A)")
+        prompt = f"""
+        Today is {today_str}. Please provide productivity recommendations and advice based on these tasks. 
+        DO NOT plan or create any new tasks.
+        Pending: {pending}
+        Overdue: {overdue}
+        """
+
+        result = await run_pipeline(prompt)
+        response = result.get("final_response", "Sorry, I could not process the summary.")
+        await context.bot.send_message(chat_id=chat_id, text=response)
+
+    except Exception as e:
+        print(f"❌ Error in morning summary job: {str(e)}")
+
+        try:
+            await context.bot.send_message(
+            chat_id=chat_id, 
+            text="⚠️ Good morning! I had trouble analyzing your tasks today. Don't worry, you can still view them on your web dashboard."
+        )
+        except Exception:
+            pass
+
+async def summary_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Allows manual triggering of the morning summary for testing"""
+    await update.message.reply_text("📋 Compiling your morning summary...")
+
+    chat_id = str(update.effective_chat.id)
+    await save_setting("telegram_chat_id", chat_id)
+
+    
+    await send_summary(context)
+
+
 async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle errors"""
     print(f"Error: {context.error}")
@@ -119,8 +165,15 @@ def run_bot():
     app.add_handler(CommandHandler("help", help_command))
     app.add_handler(CommandHandler("tasks", tasks_command))
     app.add_handler(CommandHandler("overdue", overdue_command))
+    app.add_handler(CommandHandler("summary", summary_command))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     app.add_error_handler(error_handler)
+
+    job_queue = app.job_queue
+    IST = timezone(timedelta(hours=5, minutes=30))  # set timezone to India standard time
+
+    job_queue.run_daily(send_summary, time(9, 0, 0, tzinfo=IST))
+    print("📅 Morning summary scheduler registered for 9:00 AM IST")
 
     USE_WEBHOOK = os.getenv("USE_WEBHOOK", "false").lower() == "true"
 
