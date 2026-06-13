@@ -121,6 +121,9 @@ async function searchTasks() {
 // ── Create Task Modal ─────────────────────────────────
 function openCreateModal() {
     document.getElementById('createModal').classList.add('open');
+
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('taskDueDate').value = today;
 }
 
 function closeModal() {
