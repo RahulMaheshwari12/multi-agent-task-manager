@@ -131,9 +131,12 @@ async def planner_agent(state: AgentState) -> AgentState:
     """Breaks complex requests into multiple tasks"""
     
     llm_with_tools = llm.bind_tools(planner_tools)
+
+    current_date = datetime.now().strftime("%Y-%m-%d (%A)")
     
     messages = [
-        SystemMessage(content="""You are a task planner.
+        SystemMessage(content=f"""You are a task planner.
+        Today's date is {current_date}. Use this date as reference for relative days (like 'tomorrow', 'next Friday', etc.).
         Break down the user's complex request into multiple smaller tasks.
         Create each task separately using the create_task tool.
         Assign priorities and due dates intelligently."""),
@@ -163,9 +166,12 @@ async def recommender_agent(state: AgentState) -> AgentState:
     # Get current tasks for context
     current_tasks = await get_tasks.ainvoke({"status": ""})
     overdue = await get_overdue_tasks.ainvoke({})
+
+    current_date = datetime.now().strftime("%Y-%m-%d (%A)")
     
     messages = [
         SystemMessage(content=f"""You are a productivity recommender agent.
+        Today's date is {current_date}. Use this date as reference for relative days (like 'tomorrow', 'next Friday', etc.).              
         Current tasks: {current_tasks}
         Overdue tasks: {overdue}
         
