@@ -166,9 +166,12 @@ async def recommender_agent(state: AgentState) -> AgentState:
     # Get current tasks for context
     current_tasks = await get_tasks.ainvoke({"status": ""})
     overdue = await get_overdue_tasks.ainvoke({})
+
+    current_date = datetime.now().strftime("%Y-%m-%d (%A)")
     
     messages = [
         SystemMessage(content=f"""You are a productivity recommender agent.
+        Today's date is {current_date}. Use this date as reference for relative days (like 'tomorrow', 'next Friday', etc.).              
         Current tasks: {current_tasks}
         Overdue tasks: {overdue}
         
