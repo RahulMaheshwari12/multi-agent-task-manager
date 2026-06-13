@@ -20,6 +20,12 @@ async def init_db():
                 updated_at TEXT DEFAULT CURRENT_TIMESTAMP
             )
         ''')
+        await conn.execute('''
+            CREATE TABLE IF NOT EXISTS settings (
+                key TEXT PRIMARY KEY,
+                value TEXT
+            )
+        ''')
         await conn.commit()
 
 async def create_task_db(title, description= "", priority= "medium", assigned_to= "", due_date= ""):
@@ -128,3 +134,22 @@ async def search_tasks_db(keyword):
         ))
         rows = await cursor.fetchall()
         return [dict(row) for row in rows]
+
+async def save_setting(key: str, value: str):
+    """Safely saves or updates a key-value setting"""
+    async with aiosqlite.connect(DB_path) as conn:
+        # Using ? parameters prevents SQL Injection
+        await conn.execute('''
+            INSERT OR REPLACE INTO settings (key, value)
+            VALUES (?, ?)
+        ''', (key, value))
+        await conn.commit()
+
+async def get_setting(key: str):
+    """Safely retrieves a setting by key, returns None if not found"""
+    async with aiosqlite.connect(DB_path) as conn:
+        conn.row_factory = aiosqlite.Row
+        # Using ? parameters prevents SQL Injection
+        cursor = await conn.execute('SELECT value FROM settings WHERE key = ?', (key,))
+        row = await cursor.fetchone()
+        return row['value'] if row else None
