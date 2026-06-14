@@ -31,10 +31,9 @@ The project is structured into clean boundary layers:
   [agents.py] (Cognitive Agent Nodes & Router)
        │ (llm.ainvoke / tool.ainvoke)
        ▼
-   [tools.py] (LangChain Async DB Tools)
-       │ (database_func)
-       ▼
- [database.py] (Async SQLite operations via aiosqlite)
+   [tools.py] (LangChain Async Tools)
+       ├── (database_func) ──> [database.py] (Async SQLite via aiosqlite)
+       └── (search_travel) ──> [Tavily Search API] (External Web Search)
 ```
 
 ### Cognitive Agent Roles:
@@ -42,7 +41,8 @@ The project is structured into clean boundary layers:
 2. **Task Manager Agent**: Executes CRUD operations (create, update, delete, complete) via database tools.
 3. **Planner Agent**: Decomposes complex user requests into logical, sequential subtasks.
 4. **Recommender Agent**: Analyzes active/overdue tasks and compiles morning productivity advice.
-5. **Reviewer Agent**: Validates output and determines if a retry is needed (`APPROVED` or `NEEDS_RETRY`).
+5. **Trip Planner Agent**: Researches travel details (flights, hotels, destinations) and compiles custom travel itineraries via the Tavily Search API.
+6. **Reviewer Agent**: Validates output and determines if a retry is needed (`APPROVED` or `NEEDS_RETRY`).
 
 ---
 

@@ -5,6 +5,7 @@ from agents import (
     task_manager_agent,
     planner_agent,
     recommender_agent,
+    trip_planner_agent,
     reviewer_agent,
     router
 )
@@ -17,6 +18,7 @@ def build_graph():
     graph.add_node("task_manager", task_manager_agent)
     graph.add_node("planner", planner_agent)
     graph.add_node("recommender", recommender_agent)
+    graph.add_node("trip_planner", trip_planner_agent)
     graph.add_node("reviewer", reviewer_agent)
 
     graph.set_entry_point("supervisor")
@@ -25,6 +27,7 @@ def build_graph():
         "task_manager" : "task_manager",
         "planner" : "planner",
         "recommender" : "recommender",
+        "trip_planner" : "trip_planner",
         "done" : END
     })
 
@@ -43,9 +46,16 @@ def build_graph():
         "done" : END
     })
 
+    graph.add_conditional_edges("trip_planner", router, {
+        "reviewer": "reviewer",
+        "done" : END
+    })
+
     graph.add_conditional_edges("reviewer", router, {
         "task_manager": "task_manager",
-        "retry": "task_manager",
+        "planner": "planner",
+        "recommender": "recommender",
+        "trip_planner": "trip_planner",
         "done": END
     })
 

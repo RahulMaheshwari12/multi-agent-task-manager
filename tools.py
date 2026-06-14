@@ -1,3 +1,6 @@
+import os
+from tavily import TavilyClient
+import asyncio
 from langchain_core.tools import tool 
 from database import (
     create_task_db,
@@ -115,3 +118,31 @@ async def search_tasks(keyword: str) -> str:
         return output
     except Exception as e:
         return f"Search failed: {str(e)}"
+
+@tool
+async def search_travel(query: str) -> str:
+    """Search the web for travel information, including flights, hotels, attractions, and local recommendations.
+    Always use this tool when the user asks to plan a trip, search travel options, or find details about destinations.
+    """
+    
+    api_key = os.getenv("TAVILY_API_KEY")
+    if not api_key:
+        return "Error: TAVILY_API_KEY is not set in the environment variables. Please configure it in .env file."
+    try:
+        client = TavilyClient(api_key=api_key)
+        
+        def run_search():
+            return client.search(query=query, max_results=5)
+            
+        response = await asyncio.to_thread(run_search)
+        results = response.get("results", [])
+        if not results:
+            return f"No travel information found for '{query}'."
+        
+        output = f"Tavily Search Results for '{query}':\n\n"
+        for idx, r in enumerate(results, 1):
+            output += f"{idx}. {r.get('title')}\n   URL: {r.get('url')}\n   Snippet: {r.get('content')}\n\n"
+        return output
+    except Exception as e:
+        return f"Error searching travel info: {str(e)}"
+

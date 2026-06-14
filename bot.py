@@ -20,16 +20,18 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     I can help you manage your tasks.
     
-    🤖 Just tell me what you need:
+    🤖 Chat with me directly:
     - "Create a high priority task for John to deploy frontend by Friday"
     - "Show my pending tasks"
     - "What should I focus on today?"
     - "Mark task 3 as completed"
     - "Find tasks assigned to John"
+    - "Plan a 3-day trip to Paris next month"
 
     📋 Quick Commands:
     /tasks - View all pending tasks
     /overdue - View overdue tasks
+    /summary - Generate manual morning overview summary
     /help - Shows command list 
 
     Let's get started! 🚀"""
@@ -45,9 +47,10 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     /start - Welcome message
     /tasks - View all pending tasks
     /overdue - View overdue tasks
+    /summary - Generate manual morning overview summary
     /help - Show this message
 
-    💬 Natural Language Examples:
+    💬 Try asking me like this:
     - "Create a task for John to fix login bug by Friday"
     - "Show all high priority tasks"
     - "Mark task 1 as completed"
@@ -55,7 +58,8 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     - "Update task 2 priority to high"
     - "What should I focus on today?"
     - "Show tasks assigned to Rahul"
-    - "Plan my week" """
+    - "Plan my week"
+    - "Plan a 3-day weekend trip to Paris next month" """
 
     await update.message.reply_text(message)
 

@@ -12,7 +12,8 @@ from tools import (
     complete_task,
     delete_task,
     get_overdue_tasks,
-    search_tasks
+    search_tasks,
+    search_travel
 )
 
 load_dotenv()
@@ -58,7 +59,8 @@ async def supervisor_agent(state: AgentState) -> AgentState:
         - overdue_tasks: user wants to see overdue tasks
         - search_tasks: user wants to search for tasks
         - recommend: user wants recommendations or productivity advice
-        - plan: user wants to plan multiple tasks at once
+        - plan: user wants to plan or create multiple database tasks at once (use this if the user asks to "plan tasks", "create tasks", or break down a workflow into database tasks)
+        - plan_trip: user wants to research a trip, plan a travel itinerary, search flights/hotels/attractions (general travel search and planning, not database tasks)
         
         Reply with ONLY the intent word, nothing else."""),
         HumanMessage(content=state["user_message"])
@@ -77,7 +79,8 @@ async def supervisor_agent(state: AgentState) -> AgentState:
         "overdue_tasks": "task_manager",
         "search_tasks": "task_manager",
         "recommend": "recommender",
-        "plan": "planner"
+        "plan": "planner",
+        "plan_trip": "trip_planner"
     }
     
     next_agent = intent_map.get(intent, "task_manager")
@@ -126,6 +129,7 @@ async def task_manager_agent(state: AgentState) -> AgentState:
         - Determine urgency primarily from the due date.
         - If both the due date and task description are provided, the due date takes precedence.
         - Set the priority argument of the tool call accordingly.
+        - IMPORTANT: You must invoke the tools using the provided tool calling interface. Do not output raw text, code blocks, or custom XML tags like "<function=...>" in your response to invoke a tool.
         
         """),
         HumanMessage(content=state["user_message"])
@@ -208,7 +212,8 @@ async def planner_agent(state: AgentState) -> AgentState:
         - If it is simple, create a single task.
         - If it contains multiple goals, milestones, or deliverables, create multiple tasks.
 
-        Use the create_task tool for every task you generate."""),
+        Use the create_task tool for every task you generate.
+        IMPORTANT: You must invoke the tools using the provided tool calling interface. Do not output raw text, code blocks, or custom XML tags like "<function=...>" in your response to invoke a tool."""),
         HumanMessage(content=state["user_message"])
     ]
     
@@ -226,6 +231,119 @@ async def planner_agent(state: AgentState) -> AgentState:
     else:
         tool_output = str(response.content) if hasattr(response, 'content') else str(response)
     
+    return {**state, "tool_output": tool_output, "current_agent": "reviewer"}
+
+# ── Trip Planner Agent ─────────────────────────────────
+async def trip_planner_agent(state: AgentState) -> AgentState:
+    """Plans a trip using Tavily web search tool"""
+    
+    # Bind search_travel tool to LLM
+    llm_with_tools = llm.bind_tools([search_travel])
+    
+    current_date = datetime.now().strftime("%Y-%m-%d (%A)")
+    
+    messages = [
+        SystemMessage(content=f"""You are a Trip Planner Agent.
+        Today's date is {current_date}.
+        Required Information for a full itinerary:
+        - Destination
+        - Departure location (if provided)
+        - Travel dates / Duration
+        - Budget (if provided)
+        - Number of travelers (if provided)
+        - Travel preferences (luxury, budget, adventure, family, business, etc.)
+
+        If critical information (like destination or general dates) is missing:
+        - Do not output the full Itinerary Output Structure below.
+        - Instead, output ONLY a friendly message followed by a list of concise follow-up questions.
+        - Note: Asking follow-up questions is considered a successful completion of your turn, and the Reviewer Agent will approve it.
+        - Do not guess travel dates or destinations.
+
+        Tool Usage:
+        - Always use the search_travel tool before providing recommendations.
+        - Prefer recent and reliable travel information.
+        - Synthesize search results rather than copying them.
+        - Do not make up fake flight numbers, hotel names, or actual prices if not found in the search results.
+
+        Output Structure (Use this ONLY for full trip itinerary requests):
+
+        🌍 Trip Overview
+        - Destination
+        - Travel dates
+        - Trip duration
+        - Estimated total budget
+
+        ✈️ Flight Recommendations
+        - Suggested flights
+        - Estimated price ranges
+        - Travel tips
+
+        🏨 Accommodation Recommendations
+        - Recommended hotels
+        - Budget, mid-range, and premium options
+        - Approximate nightly costs
+
+        📅 Detailed Itinerary
+
+        Day 1
+        - Morning
+        - Afternoon
+        - Evening
+
+        Day 2
+        - Morning
+        - Afternoon
+        - Evening
+
+        (Continue for all trip days)
+
+        🍽 Food Recommendations
+        - Local specialties
+        - Recommended restaurants
+
+        🚗 Transportation
+        - Airport transfers
+        - Public transportation
+        - Car rental recommendations
+
+        💰 Estimated Costs
+        - Flights
+        - Hotels
+        - Food
+        - Transportation
+        - Activities
+        - Total estimate
+
+        ⚠️ Important Travel Tips
+        - Visa requirements (if applicable)
+        - Local customs
+        - Safety considerations
+        - Weather advice
+        - Money-saving suggestions
+
+        Guidelines for specific travel queries:
+        - If the user asks a specific, narrow question (e.g., "Suggest 3 hotels in Paris" or "Is it raining in Tokyo next week?"), do not use the full Output Structure. Answer their specific query directly and concisely using the search tool.
+        - Be specific, practical, and actionable.
+        - Balance sightseeing and travel time. Avoid unrealistic, overcrowded schedules.
+        - Present information in a clean, professional, and highly structured format using bolding and bullet points.
+        - IMPORTANT: You must invoke the search_travel tool using the provided tool calling interface. Do not output raw text, code blocks, or custom XML tags like "<function=...>" in your response to invoke a tool.
+        """),
+        HumanMessage(content=state["user_message"])
+    ]
+    
+    response = await llm_with_tools.ainvoke(messages)
+    
+    tool_output = ""
+    if hasattr(response, 'tool_calls') and response.tool_calls:
+        for tool_call in response.tool_calls:
+            tool_name = tool_call['name']
+            tool_args = tool_call['args']
+            tool_map = {"search_travel": search_travel}
+            if tool_name in tool_map:
+                tool_output = await tool_map[tool_name].ainvoke(tool_args)
+    else:
+        tool_output = str(response.content) if hasattr(response, 'content') else str(response)
+        
     return {**state, "tool_output": tool_output, "current_agent": "reviewer"}
 
 # ── Recommender Agent ──────────────────────────────────
@@ -398,6 +516,21 @@ def router(state: AgentState) -> str:
         retry_count = state.get("retry_count", 0)
         if retry_count >= 2:
             return "done"
-        return "task_manager"
+        
+        # Dynamically route back to the correct worker based on the classified intent
+        intent = state.get("intent", "")
+        intent_map = {
+            "create_task": "task_manager",
+            "get_tasks": "task_manager",
+            "update_task": "task_manager",
+            "complete_task": "task_manager",
+            "delete_task": "task_manager",
+            "overdue_tasks": "task_manager",
+            "search_tasks": "task_manager",
+            "recommend": "recommender",
+            "plan": "planner",
+            "plan_trip": "trip_planner"
+        }
+        return intent_map.get(intent, "task_manager")
     
     return current
