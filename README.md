@@ -103,7 +103,11 @@ python app.py
 python bot.py
 ```
 * Connect with your bot on Telegram and type `/start` to register.
-* Test commands: `/tasks`, `/overdue`, `/summary`, or chat in plain English.
+* Quick Commands:
+  * `/tasks`: View all your pending tasks.
+  * `/overdue`: View overdue tasks that have missed their deadlines.
+  * `/summary`: Manually trigger the morning productivity summary (compiles pending/overdue tasks and generates AI coaching advice).
+  * Chat in plain English to create, complete, or delete tasks naturally.
 
 ---
 
