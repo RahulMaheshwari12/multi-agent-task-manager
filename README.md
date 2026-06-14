@@ -17,6 +17,23 @@ Built using **FastAPI**, **LangChain** & **LangGraph** (multi-agent orchestratio
 
 ---
 
+## 🧪 Advanced Features (Experimental Branch: `tools/trip_planner`)
+
+An advanced **Trip Planner Agent** integrated with the **Tavily Search API** has been developed on the [`tools/trip_planner`](https://github.com/RahulMaheshwari12/multi-agent-task-manager/tree/tools/trip_planner) branch.
+
+This experimental feature allows users to:
+* Ask the bot to plan trips (e.g., *"Plan a 3-day trip to Paris next month"*).
+* Research flight suggestions, hotel recommendations, and compile structured travel itineraries using real-time search.
+* Ask follow-up questions if critical details (destination, travel dates) are missing before planning.
+
+To test this feature locally, switch to the feature branch:
+```bash
+git checkout tools/trip_planner
+```
+Make sure to add your `TAVILY_API_KEY` to the `.env` file to enable travel search.
+
+---
+
 ## 🛠️ System Architecture
 
 The project is structured into clean boundary layers:
