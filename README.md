@@ -111,6 +111,14 @@ python bot.py
 
 ---
 
+## 📅 Proactive Notifications & Scheduling
+
+The system is equipped with an autonomous background scheduler powered by **APScheduler** running inside `bot.py`:
+* **Morning Overview Notification**: Every morning at **9:00 AM IST**, the scheduler automatically fetches all pending and overdue tasks, compiles them through the Recommender Agent, and pushes a warm productivity summary notification to the user's Telegram chat.
+* **Database-Persisted Chat Session**: The bot automatically captures your Telegram `chat_id` upon registration (running `/start` or `/summary`) and saves it to the SQLite `settings` table, allowing the scheduled background thread to route the daily notifications directly to you.
+
+---
+
 ## 📂 Project Structure
 * `database.py`: Async SQLite database setup and raw CRUD SQL queries.
 * `tools.py`: LangChain tools wrapping async database functions.
