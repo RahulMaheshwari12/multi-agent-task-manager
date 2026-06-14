@@ -105,6 +105,7 @@ async def task_manager_agent(state: AgentState) -> AgentState:
         Always use a tool to complete the request.
         For dates use YYYY-MM-DD format.
         For priority use: low, medium, or high.
+        For status use: pending, in_progress, or completed.
         Rules for determining priority of tasks:
 
         1. HIGH Priority
