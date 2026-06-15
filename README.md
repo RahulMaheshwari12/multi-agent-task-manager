@@ -19,7 +19,7 @@ Built using **FastAPI**, **LangChain** & **LangGraph** (multi-agent orchestratio
 
 ## 🧪 Advanced Features (Experimental Branch: `tools/trip_planner`)
 
-An advanced **Trip Planner Agent** integrated with the **Tavily Search API** has been developed on the [`tools/trip_planner`](https://github.com/RahulMaheshwari12/multi-agent-task-manager/tree/tools/trip_planner) branch.
+An advanced **Trip Planner Agent** integrated with the **Tavily Search API** has been developed on the [tools/trip_planner](https://github.com/RahulMaheshwari12/multi-agent-task-manager/tree/tools/trip_planner) branch.
 
 This experimental feature allows users to:
 * Ask the bot to plan trips (e.g., *"Plan a 3-day trip to Paris next month"*).
@@ -82,8 +82,10 @@ Create a `.env` file at the root of the project:
 ```env
 TELEGRAM_BOT_TOKEN="your_telegram_bot_token"
 GROQ_API_KEY="your_groq_api_key"
-USE_GROQ="true"
 ```
+
+> [!NOTE]
+> **LLM Provider & Demo Video Note**: During the recording of the demo video, the dashboard footer displayed *"Powered by LangGraph + Ollama"* as a leftover from offline design. However, because local Ollama models lack the robust function-calling capabilities required to work reliably with our multi-agent environment, we transitioned fully to **Groq (`llama-3.3-70b-versatile`)**. In the final repository release, all Ollama references have been completely removed from the code, and all system functions are working flawlessly.
 
 ---
 

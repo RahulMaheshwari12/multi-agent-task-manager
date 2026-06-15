@@ -35,7 +35,7 @@ async def lifespan(app: FastAPI):
 # ── App Setup ──────────────────────────────────────────
 app = FastAPI(
     title="Multi-Agent Task Manager",
-    description="AI powered task management system using LangGraph + Ollama",
+    description="AI powered task management system using LangGraph + Groq",
     version="1.0.0",
     lifespan=lifespan
 )
