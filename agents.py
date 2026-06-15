@@ -1,4 +1,3 @@
-from langchain_ollama import ChatOllama
 from langchain_groq import ChatGroq
 from langchain_core.messages import HumanMessage, SystemMessage
 from typing import TypedDict
@@ -19,15 +18,14 @@ from tools import (
 load_dotenv()
 
 # ── LLM Setup ─────────────────────────────────────────
-USE_GROQ = os.getenv("USE_GROQ", "false").lower() == "true"
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+if not GROQ_API_KEY:
+    raise ValueError("GROQ_API_KEY not found in environment variables. Please check your .env file.")
 
-if USE_GROQ:
-    llm = ChatGroq(
-        model="llama-3.3-70b-versatile",
-        api_key=os.getenv("GROQ_API_KEY")
-    )
-else:
-    llm = ChatOllama(model="llama3")
+llm = ChatGroq(
+    model="llama-3.3-70b-versatile",
+    api_key=GROQ_API_KEY
+)
 
 # ── Tools per agent ────────────────────────────────────
 task_manager_tools = [create_task, get_tasks, update_task, complete_task, delete_task, get_overdue_tasks, search_tasks]
