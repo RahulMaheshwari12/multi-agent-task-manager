@@ -1,0 +1,38 @@
+spec_version: "0.1.0"
+name: multi-agent-task-manager
+version: "1.0.0"
+description: An AI-powered multi-agent task management system integrating a FastAPI web dashboard and Telegram bot client with LangChain, LangGraph, Groq LLM, and aiosqlite.
+license: MIT
+
+model:
+  preferred: llama-3.3-70b-versatile
+  fallback:
+    - llama-3.1-8b-instant
+  constraints:
+    temperature: 0.1
+    max_tokens: 2048
+
+skills:
+  - task-management
+  - task-planning
+  - productivity-recommendations
+  - output-review-verification
+
+tools:
+  - create_task
+  - get_tasks
+  - update_task
+  - complete_task
+  - delete_task
+  - get_overdue_tasks
+  - search_tasks
+
+compliance:
+  segregation_of_duties:
+    roles:
+      - id: maker
+        description: Task Manager, Planner, and Recommender agents executing database CRUD and content generation.
+      - id: checker
+        description: Reviewer agent auditing outputs and triggering retries.
+    conflicts:
+      - [maker, checker]

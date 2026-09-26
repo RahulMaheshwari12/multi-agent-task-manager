@@ -1,8 +1,43 @@
-venv/
+# Environment & Secrets
 .env
-__pycache__/
-*.pyc
+*.env
+venv/
+.venv/
+env/
+
+# Database & Storage Files
 *.db
+*.sqlite
+*.sqlite3
+tasks.db
 outputs/
 .chromadb/
+
+# Python Caches & Bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE & Editor Settings
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# System Files & Logs
+.DS_Store
+Thumbs.db
 *.log
+*.tmp
+*.temp
+
+# Unrelated Project Files & Temporary Documentation
+marketing_agent/
+marketing_agent_workflow_proposal*
+interview_preparation_guide.md
+concurrency_guide.md
+scratch_search.txt
