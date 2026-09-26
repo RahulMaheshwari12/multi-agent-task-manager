@@ -1,0 +1,10 @@
+name: search-tasks
+description: Search tasks by keyword in title, description, assigned person, priority, status, or due date.
+input_schema:
+  type: object
+  properties:
+    keyword:
+      type: string
+      description: Search keyword
+  required:
+    - keyword

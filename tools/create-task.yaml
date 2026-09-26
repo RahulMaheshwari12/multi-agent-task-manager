@@ -1,0 +1,22 @@
+name: create-task
+description: Create a new task in the database with title, description, assigned person, priority, and due date.
+input_schema:
+  type: object
+  properties:
+    title:
+      type: string
+      description: Task title
+    description:
+      type: string
+      description: Task description
+    assigned_to:
+      type: string
+      description: Person assigned to task
+    priority:
+      type: string
+      description: Task priority (low, medium, high)
+    due_date:
+      type: string
+      description: Due date in YYYY-MM-DD format
+  required:
+    - title

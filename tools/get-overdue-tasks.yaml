@@ -1,0 +1,6 @@
+name: get-overdue-tasks
+description: Retrieve all tasks that have passed their due dates and are not marked as completed.
+input_schema:
+  type: object
+  properties: {}
+  required: []

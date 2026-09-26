@@ -1,0 +1,9 @@
+name: get-tasks
+description: Retrieve tasks from the database, optionally filtered by status (pending, in_progress, completed).
+input_schema:
+  type: object
+  properties:
+    status:
+      type: string
+      description: Filter tasks by status (pending, in_progress, completed)
+  required: []

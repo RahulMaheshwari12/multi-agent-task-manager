@@ -1,0 +1,10 @@
+name: delete-task
+description: Delete a task from the database by task ID.
+input_schema:
+  type: object
+  properties:
+    task_id:
+      type: integer
+      description: ID of the task to delete
+  required:
+    - task_id

@@ -1,0 +1,14 @@
+name: update-task
+description: Update one or more fields of an existing task by task ID.
+input_schema:
+  type: object
+  properties:
+    task_id:
+      type: integer
+      description: ID of the task to update
+    updates:
+      type: object
+      description: Dictionary of field updates (title, description, priority, status, assigned_to, due_date)
+  required:
+    - task_id
+    - updates

@@ -19,13 +19,13 @@ skills:
   - output-review-verification
 
 tools:
-  - create_task
-  - get_tasks
-  - update_task
-  - complete_task
-  - delete_task
-  - get_overdue_tasks
-  - search_tasks
+  - create-task
+  - get-tasks
+  - update-task
+  - complete-task
+  - delete-task
+  - get-overdue-tasks
+  - search-tasks
 
 compliance:
   segregation_of_duties:

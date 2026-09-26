@@ -1,0 +1,10 @@
+name: complete-task
+description: Mark an existing task as completed by task ID.
+input_schema:
+  type: object
+  properties:
+    task_id:
+      type: integer
+      description: ID of the task to complete
+  required:
+    - task_id
